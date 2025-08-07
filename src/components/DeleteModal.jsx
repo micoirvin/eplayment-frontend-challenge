@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTodoStore } from '../stores/todoStore';
 import fetchUserInfo from '../utils/fetchUserInfo';
 import GenericModal from './GenericModal';
@@ -6,9 +7,26 @@ export default function DeleteModal() {
   const todoForDeletion = useTodoStore((state) => state.todoForDeletion);
   const setTodoForDeletion = useTodoStore((state) => state.setTodoForDeletion);
   const removeTodo = useTodoStore((state) => state.removeTodo);
+  const [isCurrentlyDeleting, setIsCurrentlyDeleting] = useState(false);
 
-  const handleClickDelete = () => {
-    removeTodo(todoForDeletion.id);
+  const handleClickDelete = async () => {
+    setIsCurrentlyDeleting(true);
+
+    try {
+      const res = await fetch(
+        `https://jsonplaceholder.typicode.com/todos/${todoForDeletion.id}`,
+        {
+          method: 'DELETE',
+        }
+      );
+      const data = await res.json();
+      console.log('Todo deleted:', data);
+      removeTodo(todoForDeletion.id);
+    } catch (error) {
+      console.error('Error deleting todo:', error);
+    }
+
+    setIsCurrentlyDeleting(false);
     setTodoForDeletion(null);
   };
 
@@ -44,14 +62,22 @@ export default function DeleteModal() {
           </div>
           <footer className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              className="p-4 bg-[#ee6677] rounded min-w-40"
+              className={
+                'p-4 bg-[#ee6677] rounded min-w-48 flex-none ' +
+                (isCurrentlyDeleting ? 'opacity-50' : '')
+              }
+              disabled={isCurrentlyDeleting ?? null}
               onClick={handleClickDelete}
             >
-              Yes, delete.
+              {isCurrentlyDeleting ? 'Deleting...' : 'Yes, delete task.'}
             </button>
             <button
-              className="p-4 bg-[#9999aa] rounded min-w-40"
-              onClick={() => setTodoForDeletion(null)}
+              className={
+                'p-4 bg-[#9999aa] rounded min-w-48 flex-none ' +
+                (isCurrentlyDeleting ? 'opacity-50' : '')
+              }
+              onClick={(e) => setTodoForDeletion(null)}
+              disabled={isCurrentlyDeleting ?? null}
             >
               No, keep task.
             </button>

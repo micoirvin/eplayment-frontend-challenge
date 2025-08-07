@@ -13,7 +13,7 @@ export const useTodoStore = create((set) => ({
     set((state) => ({
       focusedTodo:
         todoItemId !== null
-          ? state.todos.filter((item) => item.id === todoItemId)[0]
+          ? state.todos.find((item) => item.id === todoItemId)
           : null,
     })),
   toggleCheckTodo: (todoItemId) =>
@@ -26,7 +26,7 @@ export const useTodoStore = create((set) => ({
   setTodoForDeletion: (todoItemId) =>
     set((state) => ({
       todoForDeletion: todoItemId
-        ? state.todos.filter((item) => item.id === todoItemId)[0]
+        ? state.todos.find((item) => item.id === todoItemId)
         : null,
     })),
 }));

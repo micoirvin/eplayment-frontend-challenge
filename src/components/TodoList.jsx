@@ -8,6 +8,29 @@ export default function TodoList() {
   const toggleCheckTodo = useTodoStore((state) => state.toggleCheckTodo);
   const setTodoForDeletion = useTodoStore((state) => state.setTodoForDeletion);
 
+  const handleToggleCheck = async (todoId) => {
+    toggleCheckTodo(todoId); // optimistic update
+    try {
+      const res = await fetch(
+        `https://jsonplaceholder.typicode.com/todos/${todoId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            completed: !todos.find((todo) => todo.id === todoId).completed,
+          }),
+        }
+      );
+      const data = await res.json();
+      console.log('Todo updated:', data);
+    } catch (error) {
+      toggleCheckTodo(todoId); // failed optimistic update
+      console.error('Error updating todo:', error);
+    }
+  };
+
   return (
     <ul className=" flex flex-col gap-4">
       {todos.map((todo) => (
@@ -27,7 +50,7 @@ export default function TodoList() {
           <div className="flex items-center gap-4">
             <button
               className="flex items-center justify-center flex-none  h-full"
-              onClick={() => toggleCheckTodo(todo.id)}
+              onClick={() => handleToggleCheck(todo.id)}
             >
               <CheckIcon className="h-full w-8" checked={todo.completed} />
             </button>
